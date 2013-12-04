@@ -494,6 +494,11 @@ public class ShowcaseView extends RelativeLayout
             this.hide();
             return true;
         }
+        if (MotionEvent.ACTION_UP == motionEvent.getAction() &&
+            mOptions.hideOnClickInside && distanceFromFocus <= showcaseRadius) {
+            this.hide();
+            return true;
+        }
 
         return mOptions.block && distanceFromFocus > showcaseRadius;
     }
@@ -823,6 +828,7 @@ public class ShowcaseView extends RelativeLayout
 
         public boolean block = true, noButton = false;
         public boolean hideOnClickOutside = false;
+        public boolean hideOnClickInside = true;
 
         /**
          * Does not work with the {@link ShowcaseViews} class as it does not make sense (only with
