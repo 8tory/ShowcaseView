@@ -370,13 +370,17 @@ public class ShowcaseView extends RelativeLayout
 
     public void setHardwareAccelerated(boolean accelerated) {
         if (accelerated) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                Paint hardwarePaint = new Paint();
-                hardwarePaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.OVERLAY));
-                setLayerType(LAYER_TYPE_HARDWARE, hardwarePaint);
-            } else {
-                setDrawingCacheEnabled(false);
-            }
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+				if (isHardwareAccelerated()) {
+					Paint hardwarePaint = new Paint();
+					hardwarePaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.OVERLAY));
+					setLayerType(LAYER_TYPE_HARDWARE, hardwarePaint);
+				} else {
+					setLayerType(LAYER_TYPE_SOFTWARE, null);
+				}
+			} else {
+				setDrawingCacheEnabled(true);
+			}
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                 setLayerType(LAYER_TYPE_SOFTWARE, null);
@@ -421,12 +425,34 @@ public class ShowcaseView extends RelativeLayout
 
     }
 
+    /**
+     * Adds an animated hand performing a gesture.
+     * All parameters passed to this method are relative to the center of the showcased view.
+     * @param offsetStartX  x-offset of the start position
+     * @param offsetStartY  y-offset of the start position
+     * @param offsetEndX    x-offset of the end position
+     * @param offsetEndY    y-offset of the end position
+     * @see com.espian.showcaseview.ShowcaseView#animateGesture(float, float, float, float, boolean)
+     */
     public void animateGesture(float offsetStartX, float offsetStartY, float offsetEndX,
             float offsetEndY) {
+        animateGesture(offsetStartX, offsetStartY, offsetEndX, offsetEndY, false);
+    }
+
+    /**
+     * Adds an animated hand performing a gesture.
+     * @param startX                x-coordinate or x-offset of the start position
+     * @param startY                y-coordinate or x-offset of the start position
+     * @param endX                  x-coordinate or x-offset of the end position
+     * @param endY                  y-coordinate or x-offset of the end position
+     * @param absoluteCoordinates   If true, this will use absolute coordinates instead of coordinates relative to the center of the showcased view
+     */
+    public void animateGesture(float startX, float startY, float endX,
+            float endY, boolean absoluteCoordinates) {
         mHandy = ((LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE))
                 .inflate(R.layout.handy, null);
         addView(mHandy);
-        moveHand(offsetStartX, offsetStartY, offsetEndX, offsetEndY, new AnimationEndListener() {
+        moveHand(startX, startY, endX, endY, absoluteCoordinates, new AnimationEndListener() {
             @Override
             public void onAnimationEnd() {
                 removeView(mHandy);
@@ -434,11 +460,12 @@ public class ShowcaseView extends RelativeLayout
         });
     }
 
-    private void moveHand(float offsetStartX, float offsetStartY, float offsetEndX,
-            float offsetEndY, AnimationEndListener listener) {
-        AnimationUtils.createMovementAnimation(mHandy, showcaseX, showcaseY,
-                offsetStartX, offsetStartY,
-                offsetEndX, offsetEndY,
+    private void moveHand(float startX, float startY, float endX,
+            float endY, boolean absoluteCoordinates, AnimationEndListener listener) {
+        AnimationUtils.createMovementAnimation(mHandy, absoluteCoordinates?0:showcaseX,
+                absoluteCoordinates?0:showcaseY,
+                startX, startY,
+                endX, endY,
                 listener).start();
     }
 
